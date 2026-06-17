@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Efecto Revolú</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --azul: #0a1f44;
+    --azul-medio: #1a3a6e;
+    --cyan: #4fc3f7;
+    --dorado: #f5c518;
+    --blanco: #ffffff;
+  }
+  body { font-family: 'Segoe UI', sans-serif; background: var(--azul); color: var(--blanco); overflow-x: hidden; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    background: rgba(10,31,68,0.97); backdrop-filter: blur(10px);
+    padding: 0.9rem 2rem; display: flex; justify-content: flex-start; align-items: center; gap: 2.5rem;
+    border-bottom: 1px solid rgba(79,195,247,0.2);
+  }
+  .nav-logo { font-size: 1.2rem; font-weight: 700; color: var(--cyan); letter-spacing: 1px; white-space: nowrap; flex-shrink: 0; }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; white-space: nowrap; }
+  .nav-links a:hover { color: var(--cyan); }
+
+  .nav-toggle { display: none; flex-direction: column; gap: 5px; cursor: pointer; margin-left: auto; background: none; border: none; padding: 4px; }
+  .nav-toggle span { display: block; width: 24px; height: 2px; background: var(--cyan); border-radius: 2px; transition: transform 0.3s, opacity 0.3s; }
+  .nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-toggle.open span:nth-child(2) { opacity: 0; }
+  .nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; padding: 0.9rem 1.2rem; gap: 0; justify-content: space-between; }
+    .nav-toggle { display: flex; }
+    .nav-links { display: none; width: 100%; flex-direction: column; gap: 0; border-top: 1px solid rgba(79,195,247,0.15); margin-top: 0.6rem; padding-top: 0.5rem; }
+    .nav-links.open { display: flex; }
+    .nav-links li a { display: block; padding: 0.6rem 0; font-size: 1rem; }
+  }
+  @media (min-width: 601px) and (max-width: 900px) {
+    nav { gap: 1.5rem; padding: 0.9rem 1.5rem; }
+    .nav-links { gap: 1rem; }
+    .nav-links a { font-size: 0.85rem; }
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 6rem 2rem 4rem;
+    background: radial-gradient(ellipse at center, #1a3a6e 0%, #0a1f44 70%);
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 30% 60%, rgba(79,195,247,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(245,197,24,0.06) 0%, transparent 50%);
+    animation: rotar 20s linear infinite;
+  }
+  @keyframes rotar { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .hero-content { position: relative; z-index: 1; max-width: 800px; }
+  .hero-tag {
+    display: inline-block; background: rgba(79,195,247,0.15); color: var(--cyan);
+    border: 1px solid rgba(79,195,247,0.4); border-radius: 20px;
+    padding: 0.4rem 1.2rem; font-size: 0.85rem; margin-bottom: 1.5rem;
+    animation: fadeDown 0.8s ease both;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 800; line-height: 1.1;
+    animation: fadeDown 0.8s 0.2s ease both;
+  }
+  .hero h1 span { color: var(--dorado); }
+  .hero p {
+    font-size: 1.15rem; color: rgba(255,255,255,0.75); margin: 1.5rem 0 2.5rem;
+    max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.7;
+    animation: fadeDown 0.8s 0.4s ease both;
+  }
+  .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; animation: fadeDown 0.8s 0.6s ease both; }
+  .btn-primary {
+    background: var(--dorado); color: var(--azul); padding: 0.9rem 2rem;
+    border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,197,24,0.4); }
+  .btn-secondary {
+    border: 1.5px solid var(--cyan); color: var(--cyan); padding: 0.9rem 2rem;
+    border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem;
+    transition: background 0.3s;
+  }
+  .btn-secondary:hover { background: rgba(79,195,247,0.1); }
+
+  .stats-row {
+    display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;
+    margin-top: 4rem; animation: fadeDown 0.8s 0.8s ease both;
+  }
+  .stat { text-align: center; }
+  .stat strong { display: block; font-size: 2rem; font-weight: 800; color: var(--dorado); }
+  .stat span { font-size: 0.85rem; color: rgba(255,255,255,0.6); }
+
+  /* SECTIONS */
+  section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+  .section-full { background: rgba(255,255,255,0.03); }
+  .section-full > * { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem; }
+
+  .section-tag {
+    color: var(--cyan); font-size: 0.8rem; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 0.5rem;
+  }
+  h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; margin-bottom: 1rem; }
+  h2 span { color: var(--dorado); }
+  .section-sub { color: rgba(255,255,255,0.65); font-size: 1.05rem; line-height: 1.7; max-width: 600px; }
+
+  /* SOBRE NOSOTROS */
+  .sobre-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; margin-top: 3rem; }
+  .pilares { display: grid; gap: 1rem; }
+  .pilar {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(79,195,247,0.15);
+    border-radius: 12px; padding: 1.2rem 1.5rem; display: flex; align-items: flex-start; gap: 1rem;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .pilar:hover { border-color: rgba(79,195,247,0.5); transform: translateX(4px); }
+  .pilar-icon {
+    width: 40px; height: 40px; border-radius: 8px; background: rgba(79,195,247,0.15);
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+  }
+  .pilar h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .pilar p { font-size: 0.88rem; color: rgba(255,255,255,0.6); line-height: 1.5; }
+
+  .sobre-visual {
+    background: linear-gradient(135deg, rgba(79,195,247,0.1), rgba(245,197,24,0.05));
+    border: 1px solid rgba(79,195,247,0.2); border-radius: 20px; padding: 2.5rem;
+    text-align: center;
+  }
+  .logo-circle {
+    width: 120px; height: 120px; border-radius: 50%; background: #0e2a5e;
+    border: 3px solid var(--cyan); margin: 0 auto 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; animation: pulsar 3s ease-in-out infinite;
+  }
+  @keyframes pulsar {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(79,195,247,0.4); }
+    50% { box-shadow: 0 0 0 20px rgba(79,195,247,0); }
+  }
+  .sobre-visual h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--cyan); }
+  .sobre-visual p { font-size: 0.9rem; color: rgba(255,255,255,0.65); line-height: 1.6; }
+
+  /* COMO APLICAR */
+  .pasos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+  .paso {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(245,197,24,0.2);
+    border-radius: 16px; padding: 2rem 1.5rem; text-align: center;
+    transition: transform 0.3s, border-color 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .paso:hover { transform: translateY(-6px); border-color: rgba(245,197,24,0.5); }
+  .paso::before {
+    content: attr(data-n); position: absolute; top: -10px; right: 10px;
+    font-size: 5rem; font-weight: 900; color: rgba(245,197,24,0.07); line-height: 1;
+  }
+  .paso-num {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--dorado);
+    color: var(--azul); font-weight: 800; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;
+  }
+  .paso h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .paso p { font-size: 0.88rem; color: rgba(255,255,255,0.6); line-height: 1.5; }
+
+  /* CONTACTO */
+  .contacto-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; align-items: start; margin-top: 3rem; }
+  .contacto-info { display: flex; flex-direction: column; gap: 1.5rem; }
+  .info-item { display: flex; gap: 1rem; align-items: flex-start; }
+  .info-icon {
+    width: 44px; height: 44px; border-radius: 10px; background: rgba(79,195,247,0.12);
+    border: 1px solid rgba(79,195,247,0.25); display: flex; align-items: center;
+    justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+  }
+  .info-item h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .info-item p { font-size: 0.88rem; color: rgba(255,255,255,0.6); }
+
+  form { display: flex; flex-direction: column; gap: 1rem; }
+  form input, form textarea, form select {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(79,195,247,0.2);
+    border-radius: 10px; padding: 0.85rem 1.1rem; color: var(--blanco);
+    font-size: 0.95rem; font-family: inherit; transition: border-color 0.3s;
+    outline: none;
+  }
+  form input:focus, form textarea:focus, form select:focus { border-color: var(--cyan); }
+  form input::placeholder, form textarea::placeholder { color: rgba(255,255,255,0.35); }
+  form select option { background: var(--azul-medio); }
+  form textarea { resize: vertical; min-height: 120px; }
+  form button {
+    background: var(--dorado); color: var(--azul); border: none; padding: 1rem;
+    border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  form button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,197,24,0.4); }
+
+  /* FOOTER */
+  footer {
+    text-align: center; padding: 2rem; border-top: 1px solid rgba(79,195,247,0.1);
+    color: rgba(255,255,255,0.4); font-size: 0.85rem;
+  }
+  footer span { color: var(--cyan); }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 700px) {
+    .sobre-grid, .contacto-grid { grid-template-columns: 1fr; }
+    .stats-row { gap: 2rem; }
+    .nav-links { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Efecto Revolú</div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#inicio">Inicio</a></li>
+    <li><a href="#sobre">Nosotros</a></li>
+    <li><a href="#aplicar">Cómo aplicar</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<div id="inicio" class="hero">
+  <div class="hero-content">
+    <div class="hero-tag">🚀 Acelerador de Emprendimiento Juvenil — Tumaco</div>
+    <h1>Transforma tu idea en un <span>negocio real</span></h1>
+    <p>Efecto Revolú impulsa a jóvenes emprendedores del Pacífico colombiano con mentoría, herramientas y una comunidad que cree en su potencial.</p>
+    <div class="hero-btns">
+      <a href="#aplicar" class="btn-primary">Quiero aplicar</a>
+      <a href="#sobre" class="btn-secondary">Conocer más</a>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><strong>+50</strong><span>Jóvenes impactados</span></div>
+      <div class="stat"><strong>12</strong><span>Mentores activos</span></div>
+      <div class="stat"><strong>3</strong><span>Cohortes lanzadas</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SOBRE NOSOTROS -->
+<div class="section-full">
+  <section id="sobre" class="reveal">
+    <div class="section-tag">Quiénes somos</div>
+    <h2>Más que un programa, <span>un movimiento</span></h2>
+    <p class="section-sub">Creemos que el talento no tiene dirección postal. En Efecto Revolú conectamos a jóvenes del Pacífico con oportunidades reales de crecimiento económico y personal.</p>
+    <div class="sobre-grid">
+      <div class="pilares">
+        <div class="pilar">
+          <div class="pilar-icon">🌍</div>
+          <div>
+            <h3>Territorio y propósito</h3>
+            <p>Arraigados en Tumaco, construimos desde el territorio con orgullo e identidad.</p>
+          </div>
+        </div>
+        <div class="pilar">
+          <div class="pilar-icon">⚡</div>
+          <div>
+            <h3>Metodología práctica</h3>
+            <p>Aprendizaje acelerado con herramientas reales, mentorías y retos de negocio.</p>
+          </div>
+        </div>
+        <div class="pilar">
+          <div class="pilar-icon">🤝</div>
+          <div>
+            <h3>Red de aliados</h3>
+            <p>Empresas, instituciones e inversionistas que creen en el emprendimiento joven.</p>
+          </div>
+        </div>
+        <div class="pilar">
+          <div class="pilar-icon">📈</div>
+          <div>
+            <h3>Impacto medible</h3>
+            <p>Seguimos el crecimiento de cada emprendedor más allá del programa.</p>
+          </div>
+        </div>
+      </div>
+      <div class="sobre-visual">
+        <div class="logo-circle">💡</div>
+        <h3>Efecto Revolú</h3>
+        <p>Acelerador de emprendimiento juvenil del Pacífico colombiano. Formamos líderes que transforman sus comunidades a través de negocios sostenibles.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- COMO APLICAR -->
+<section id="aplicar" class="reveal">
+  <div class="section-tag">Proceso de selección</div>
+  <h2>¿Cómo <span>aplicar</span>?</h2>
+  <p class="section-sub">El proceso es sencillo. En cuatro pasos podrías estar formando parte de la próxima cohorte de Efecto Revolú.</p>
+  <div class="pasos">
+    <div class="paso" data-n="1">
+      <div class="paso-num">1</div>
+      <h3>Diligencia el formulario</h3>
+      <p>Cuéntanos sobre ti, tu idea o negocio y por qué quieres ser parte del programa.</p>
+    </div>
+    <div class="paso" data-n="2">
+      <div class="paso-num">2</div>
+      <h3>Revisión de perfil</h3>
+      <p>Nuestro equipo evalúa tu solicitud en menos de 5 días hábiles.</p>
+    </div>
+    <div class="paso" data-n="3">
+      <div class="paso-num">3</div>
+      <h3>Entrevista de selección</h3>
+      <p>Una conversación corta para conocerte mejor y validar tu motivación.</p>
+    </div>
+    <div class="paso" data-n="4">
+      <div class="paso-num">4</div>
+      <h3>¡Bienvenido a Revolú!</h3>
+      <p>Recibirás toda la info para arrancar. El efecto ya comenzó.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<div class="section-full">
+  <section id="contacto" class="reveal">
+    <div class="section-tag">Contáctanos</div>
+    <h2>¿Listo para <span>aplicar</span>?</h2>
+    <p class="section-sub">Déjanos tus datos y nos ponemos en contacto contigo pronto.</p>
+    <div class="contacto-grid">
+      <div class="contacto-info">
+        <div class="info-item">
+          <div class="info-icon">📍</div>
+          <div><h4>Ubicación</h4><p>Tumaco, Nariño — Colombia</p></div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">📧</div>
+          <div><h4>Correo electrónico</h4><p>efectorevolu@gmail.com</p></div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">📱</div>
+          <div><h4>WhatsApp</h4><a href="https://wa.me/573183149567?text=Hola!%20quiero%20m%C3%A1s%20informaci%C3%B3n%20y%20asesoramiento" target="_blank" style="color: var(--cyan); font-size: 0.88rem;">Escríbenos al WhatsApp</a></div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">🕐</div>
+          <div><h4>Tiempo de respuesta</h4><p>Respondemos en menos de 48 horas</p></div>
+        </div>
+      </div>
+      <form onsubmit="enviarFormulario(event)">
+        <input type="text" placeholder="Tu nombre completo" required />
+        <input type="email" placeholder="Correo electrónico" required />
+        <input type="tel" placeholder="WhatsApp / Teléfono" />
+        <select>
+          <option value="" disabled selected>¿Tienes una idea o negocio?</option>
+          <option>Tengo una idea, aún no la he ejecutado</option>
+          <option>Tengo un negocio en etapa inicial</option>
+          <option>Mi negocio ya lleva más de 1 año</option>
+          <option>Soy aliado o quiero apoyar el programa</option>
+        </select>
+        <textarea placeholder="Cuéntanos brevemente sobre tu emprendimiento o interés en el programa..."></textarea>
+        <button type="submit">Enviar solicitud →</button>
+      </form>
+    </div>
+  </section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 <span>Efecto Revolú</span> · Tumaco, Nariño · Todos los derechos reservados</p>
+</footer>
+
+<script>
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  navToggle.addEventListener('click', () => {
+    navToggle.classList.toggle('open');
+    navLinks.classList.toggle('open');
+  });
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      navToggle.classList.remove('open');
+      navLinks.classList.remove('open');
+    });
+  });
+
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) t.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  function enviarFormulario(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    btn.textContent = '✓ Solicitud enviada';
+    btn.style.background = '#4fc3f7';
+    setTimeout(() => {
+      btn.textContent = 'Enviar solicitud →';
+      btn.style.background = '';
+      e.target.reset();
+    }, 3000);
+  }
+</script>
+
+</body>
+</html>
